@@ -17,6 +17,8 @@ recipe:
     category: "tunnel"
     version: "1.0.0"
 
+  finalResultField: server_url
+
   parameters:
     port: "8080"
     protocol: "http"

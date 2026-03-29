@@ -5,7 +5,7 @@ recipe:
       Exposes a local service via a public URL using Cloudflare Tunnel (cloudflared).
 
       Starts a cloudflared process, waits for the Quick Tunnel URL to appear in its output,
-      and stores it in state as `tunnel_url`.
+      and stores it in state as `server_url` (also exposed as `final_result`).
 
       Requirements:
         - cloudflared must be installed and available in PATH
@@ -13,7 +13,6 @@ recipe:
       Usage:
         mywant recipes list
         mywant wants create --recipe "Cloudflare Tunnel" -p port=3000
-    custom_type: "cloudflare"
     category: "tunnel"
     version: "1.0.0"
 

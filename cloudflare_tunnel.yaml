@@ -23,7 +23,7 @@ recipe:
     command: "cloudflared"
     args: '["tunnel", "--url", "http://localhost:8080"]'
     url_regex: '\|\s+(https://[a-zA-Z0-9-]+\.trycloudflare\.com)\s+'
-    result_field: "tunnel_url"
+    result_field: "server_url"
     max_retries: 40
     log_file: ""
 

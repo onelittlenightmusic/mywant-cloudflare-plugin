@@ -1,66 +1,126 @@
-recipe:
+wantType:
   metadata:
-    name: "Cloudflare Tunnel"
+    name: cloudflare
+    title: Cloudflare Tunnel
     description: |
       Exposes a local service via a public URL using Cloudflare Tunnel (cloudflared).
-
-      Starts a cloudflared process, waits for the Quick Tunnel URL to appear in its output,
+      Starts cloudflared in the background, waits for the Quick Tunnel URL to appear in its output,
       and stores it in state as `server_url` (also exposed as `final_result`).
 
       Requirements:
         - cloudflared must be installed and available in PATH
+    version: "1.0"
+    category: tunnel
 
-      Usage:
-        mywant recipes list
-        mywant wants create --recipe "Cloudflare Tunnel" -p port=3000
-    custom_type: "cloudflare"
-    category: "tunnel"
-    version: "1.0.0"
+  parameters:
+    - name: port
+      description: Local port to expose
+      type: string
+      default: "8080"
+    - name: args
+      description: CLI arguments as JSON array (overrides port if set)
+      type: string
+      default: '["tunnel", "--url", "http://localhost:8080"]'
+    - name: command
+      description: Path to cloudflared binary
+      type: string
+      default: "cloudflared"
+    - name: url_regex
+      description: Regex to extract the tunnel URL from logs
+      type: string
+      default: '\|\s+(https://[a-zA-Z0-9-]+\.trycloudflare\.com)\s+'
+    - name: max_retries
+      description: Max retries waiting for the tunnel URL
+      type: int
+      default: 40
+    - name: log_file
+      description: Path to capture cloudflared output (auto-generated if empty)
+      type: string
+      default: ""
+
+  requires:
+    - live_server_management
 
   finalResultField: server_url
 
-  parameters:
-    port: "8080"
-    protocol: "http"
-    command: "cloudflared"
-    args: '["tunnel", "--url", "http://localhost:8080"]'
-    url_regex: '\|\s+(https://[a-zA-Z0-9-]+\.trycloudflare\.com)\s+'
-    result_field: "server_url"
-    max_retries: 40
-    log_file: ""
+  onInitialize:
+    params:
+      process_command: command
+      process_args: args
+      process_log_file: log_file
+      url_regex: url_regex
+      result_field: result_field
+      max_retries: max_retries
+    current:
+      result_field: server_url
+    plan:
+      process_plan: "start"
+    executeAgents: true
 
-  parameter_descriptions:
-    port: "Local port to expose"
-    protocol: "Protocol for the local service (http, tcp, tls)"
-    command: "Path to cloudflared binary"
-    args: "CLI arguments as JSON array"
-    url_regex: "Regex to extract the tunnel URL from logs"
-    result_field: "State field name to store the extracted URL"
-    max_retries: "Max retries waiting for the tunnel URL"
-    log_file: "Path to capture cloudflared output (auto-generated if empty)"
+  onDelete:
+    plan:
+      process_plan: "stop"
+    executeAgents: true
 
-  wants:
-    - metadata:
-        type: managed_process
-        labels:
-          role: tunnel
-          provider: cloudflare
-      spec:
-        params:
-          command: command
-          args: args
-          url_regex: url_regex
-          result_field: result_field
-          max_retries: max_retries
-          log_file: log_file
+  achievedWhen:
+    field: process_status
+    operator: "=="
+    value: "running"
 
-  example:
-    wants:
-      - metadata:
-          name: "cloudflare-tunnel"
-          type: "cloudflare"
-          labels:
-            recipe: "Cloudflare Tunnel"
-        spec:
-          params:
-            port: "3000"
+  state:
+    - name: process_pid
+      type: int
+      label: current
+      persistent: true
+      initialValue: 0
+    - name: process_status
+      type: string
+      label: current
+      persistent: true
+      initialValue: ""
+    - name: process_log_file
+      type: string
+      label: current
+      persistent: true
+      initialValue: ""
+    - name: process_command
+      type: string
+      label: current
+      persistent: false
+      initialValue: ""
+    - name: process_args
+      type: string
+      label: current
+      persistent: false
+      initialValue: ""
+    - name: process_plan
+      type: string
+      label: plan
+      persistent: false
+      initialValue: ""
+    - name: url_regex
+      type: string
+      label: current
+      persistent: false
+      initialValue: ""
+    - name: result_field
+      type: string
+      label: current
+      persistent: false
+      initialValue: ""
+    - name: max_retries
+      type: int
+      label: current
+      persistent: false
+      initialValue: 0
+    - name: server_url
+      description: Extracted tunnel URL
+      type: string
+      label: current
+      persistent: true
+      initialValue: ""
+    - name: error_message
+      type: string
+      label: current
+      persistent: true
+      initialValue: ""

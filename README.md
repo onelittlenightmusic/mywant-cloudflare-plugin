@@ -1,9 +1,9 @@
 # mywant-cloudflare
 
-A [MyWant](https://github.com/onelittlenightmusic/mywant) plugin that adds the `cloudflare` want type.
+A [MyWant](https://github.com/onelittlenightmusic/mywant) plugin that adds the **Cloudflare Tunnel** recipe.
 
-Manages a Cloudflare Tunnel (`cloudflared`) lifecycle to expose a local service via a public URL.
-Automatically starts the cloudflared process, parses the Quick Tunnel URL from its output, and stores it in state.
+Exposes a local service via a public URL using Cloudflare Tunnel (cloudflared).
+Uses the built-in `managed_process` want type under the hood.
 
 ## Requirements
 
@@ -13,40 +13,31 @@ Automatically starts the cloudflared process, parses the Quick Tunnel URL from i
 ## Installation
 
 ```sh
-mkdir -p ~/.mywant/custom-types
-curl -o ~/.mywant/custom-types/cloudflare_tunnel.yaml \
+mkdir -p ~/.mywant/recipes
+curl -o ~/.mywant/recipes/cloudflare_tunnel.yaml \
   https://raw.githubusercontent.com/onelittlenightmusic/mywant-cloudflare-plugin/main/cloudflare_tunnel.yaml
-```
-
-Or manually copy `cloudflare_tunnel.yaml` to `~/.mywant/custom-types/`.
-The type is loaded automatically on next server start, or register it without restart:
-
-```sh
-mywant types create -f ~/.mywant/custom-types/cloudflare_tunnel.yaml
 ```
 
 ## Usage
 
-```yaml
-metadata:
-  name: my-tunnel
-  type: cloudflare
-spec:
-  params:
-    port: "3000"
-```
-
 ```sh
-mywant wants create -f my-tunnel.yaml
+# List available recipes (confirm "Cloudflare Tunnel" appears)
+mywant recipes list
+
+# Deploy with default port 8080
+mywant wants create --recipe "Cloudflare Tunnel"
+
+# Deploy with custom port
+mywant wants create --recipe "Cloudflare Tunnel" -p port=3000
 ```
 
 ## Parameters
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
-| `port` | string | `"8080"` | Local port to expose |
-| `protocol` | string | `"http"` | Protocol for the local service |
-| `command` | string | `"cloudflared"` | Path to cloudflared binary |
-| `args` | string | `'["tunnel","--url","http://localhost:8080"]'` | CLI arguments (JSON array) |
-| `max_retries` | int | `40` | Max retries waiting for URL |
-| `log_file` | string | `""` | Path to capture output (auto if empty) |
+| Name | Default | Description |
+|------|---------|-------------|
+| `port` | `"8080"` | Local port to expose |
+| `protocol` | `"http"` | Protocol for the local service |
+| `command` | `"cloudflared"` | Path to cloudflared binary |
+| `args` | `'["tunnel","--url","http://localhost:8080"]'` | CLI arguments (JSON array) |
+| `max_retries` | `40` | Max retries waiting for URL |
+| `log_file` | `""` | Path to capture output (auto if empty) |

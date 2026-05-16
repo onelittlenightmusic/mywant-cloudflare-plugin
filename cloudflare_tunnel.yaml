@@ -17,11 +17,11 @@ wantType:
     - name: port
       description: Local port to expose
       type: string
-      default: "8080"
+      default: "8081"
     - name: args
       description: CLI arguments as JSON array (overrides port if set)
       type: string
-      default: '["tunnel", "--url", "http://localhost:8080"]'
+      default: '["tunnel", "--url", "http://localhost:8081"]'
     - name: command
       description: Path to cloudflared binary
       type: string

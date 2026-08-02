@@ -5,7 +5,10 @@ wantType:
     description: |
       Exposes a local service via a public URL using Cloudflare Tunnel (cloudflared).
       Starts cloudflared in the background, waits for the Quick Tunnel URL to appear in its output,
-      and stores it in state as `server_url` (also exposed as `final_result`).
+      and stores it in state as `tunnel_url` (also exposed as `final_result`).
+      Since result_field defaults to "tunnel_url", the URL is also auto-persisted
+      into ~/.mywant/config.yaml's tunnel_url field — see storeLaunchResultURL in
+      mywant/engine/types/agent_launch_manager.go.
 
       Requirements:
         - cloudflared must be installed and available in PATH
@@ -39,11 +42,19 @@ wantType:
       description: Path to capture cloudflared output (auto-generated if empty)
       type: string
       default: ""
+    - name: result_field
+      description: |
+        State field to store the captured URL in. Defaults to "tunnel_url", which
+        the engine auto-persists into ~/.mywant/config.yaml's tunnel_url field
+        once captured (see storeLaunchResultURL). Override to "server_url" (or
+        anything else) to opt out of that auto-persistence.
+      type: string
+      default: "tunnel_url"
 
   requires:
     - live_server_management
 
-  finalResultField: server_url
+  finalResultField: tunnel_url
 
   onInitialize:
     params:
@@ -53,8 +64,6 @@ wantType:
       url_regex: url_regex
       result_field: result_field
       max_retries: max_retries
-    current:
-      result_field: server_url
     plan:
       process_plan: "start"
     executeAgents: true
@@ -116,7 +125,13 @@ wantType:
       persistent: false
       initialValue: 0
     - name: server_url
-      description: Extracted tunnel URL
+      description: Extracted tunnel URL (populated only if result_field is overridden to "server_url")
+      type: string
+      label: current
+      persistent: true
+      initialValue: ""
+    - name: tunnel_url
+      description: Extracted tunnel URL (default result_field target) — mirrors config.yaml's tunnel_url once persisted
       type: string
       label: current
       persistent: true

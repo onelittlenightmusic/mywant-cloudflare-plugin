@@ -1,6 +1,8 @@
 wantType:
   metadata:
     name: cloudflare
+    labels:
+      aliases: "cloudflare,tunnel,トンネル"
     title: Cloudflare Tunnel
     description: |
       Exposes a local service via a public URL using Cloudflare Tunnel (cloudflared).
